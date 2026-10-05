@@ -1,0 +1,43 @@
+name: paymybuddy-registry
+
+services:
+  registry:
+    image: registry:3
+    restart: always
+    environment:
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
+    volumes:
+      - registry-data:/var/lib/registry
+    ports:
+      - 5002:5000
+    networks:
+      - pozos-registry-network
+    
+  registry-ui:
+    image: joxit/docker-registry-ui:main
+    restart: always
+    depends_on:
+      - registry
+    ports:
+      - 8090:80
+    environment:
+      - SINGLE_REGISTRY=true
+      - REGISTRY_TITLE=Docker Registry UI
+      - DELETE_IMAGES=true
+      - SHOW_CONTENT_DIGEST=true
+      - NGINX_PROXY_PASS_URL=http://registry:5000
+      - SHOW_CATALOG_NB_TAGS=true
+      - CATALOG_MIN_BRANCHES=1
+      - CATALOG_MAX_BRANCHES=1
+      - TAGLIST_PAGE_SIZE=100 
+      - REGISTRY_SECURED=false
+      - CATALOG_ELEMENTS_LIMIT=1000
+    networks:
+      - pozos-registry-network
+
+volumes:
+  registry-data:
+
+networks:
+  pozos-registry-network:
+    driver: bridge
